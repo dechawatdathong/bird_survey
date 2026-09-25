@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" style="color-scheme:only light">
 <head>
 <meta charset="UTF-8">
 <meta name="theme-color" content="#0E5CA6">
+<meta name="color-scheme" content="only light">
+<meta name="supported-color-schemes" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>แบบสำรวจ · นกน้ำอพยพและถิ่นที่อยู่อาศัย</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -49,6 +51,7 @@
   </div>
 
   <div class="wrap">
+    <div id="steps-sentinel"></div>
     <div class="steps">
       <button class="step-btn active" data-tab="1" onclick="go(1)"><div class="step-num">1</div><div class="step-label">ข้อมูลพื้นที่</div></button>
       <button class="step-btn" data-tab="2" onclick="go(2)"><div class="step-num">2</div><div class="step-label">ภัยคุกคาม</div></button>
@@ -63,18 +66,18 @@
         <h3 class="q-title">ข้อมูลผู้กรอกแบบสำรวจ</h3>
         <div class="field-row">
           <div class="field"><label class="field-label">วันที่เก็บข้อมูล</label><input type="date" id="f-date"></div>
-          <div class="field"><label class="field-label">ชื่อ-นามสกุล</label><input type="text" id="f-name" placeholder="ชื่อ นามสกุล"></div>
+          <div class="field"><label class="field-label">ชื่อ-นามสกุล</label><input type="text" id="f-name" placeholder="ชื่อ นามสกุล" autocomplete="name" enterkeyhint="next"></div>
         </div>
-        <div class="field"><label class="field-label">ชื่อเครือข่ายอนุรักษ์ (หากมี)</label><input type="text" id="f-network" placeholder="เช่น เครือข่ายอนุรักษ์นกน้ำ..."></div>
+        <div class="field"><label class="field-label">ชื่อเครือข่ายอนุรักษ์ (หากมี)</label><input type="text" id="f-network" enterkeyhint="next" placeholder="เช่น เครือข่ายอนุรักษ์นกน้ำ..."></div>
       </div>
 
       <div class="card">
         <span class="q-label">ส่วนที่ 1 · ข้อมูลกายภาพและประเภทของพื้นที่</span>
         <h3 class="q-title">ข้อมูลพื้นที่ที่สำรวจ</h3>
-        <div class="field"><label class="field-label">1.1 ชื่อพื้นที่</label><input type="text" id="f-areaname" placeholder="ชื่อพื้นที่/บริเวณที่สำรวจ"></div>
-        <div class="field"><label class="field-label">1.2 ที่ตั้งตามเขตการปกครอง</label><input type="text" id="f-location" placeholder="ตำบล / อำเภอ / จังหวัด"></div>
-        <div class="field-row">
-          <div class="field"><label class="field-label">1.3 ขนาดพื้นที่</label><input type="text" id="f-size" placeholder="ระบุตัวเลข"></div>
+        <div class="field"><label class="field-label">1.1 ชื่อพื้นที่</label><input type="text" id="f-areaname" enterkeyhint="next" placeholder="ชื่อพื้นที่/บริเวณที่สำรวจ"></div>
+        <div class="field"><label class="field-label">1.2 ที่ตั้งตามเขตการปกครอง</label><input type="text" id="f-location" enterkeyhint="next" placeholder="ตำบล / อำเภอ / จังหวัด"></div>
+        <div class="field-row keep">
+          <div class="field"><label class="field-label">1.3 ขนาดพื้นที่</label><input type="text" id="f-size" placeholder="ระบุตัวเลข" inputmode="decimal" enterkeyhint="next"></div>
           <div class="field"><label class="field-label">หน่วย</label><select id="f-size-unit"><option value="ไร่">ไร่</option><option value="ตร.กม.">ตารางกิโลเมตร</option></select></div>
         </div>
         <div class="field"><label class="field-label">1.4 ลักษณะกายภาพของพื้นที่ (หากมี)</label><textarea id="f-physical" placeholder="อธิบายลักษณะทางกายภาพพอสังเขป"></textarea></div>
@@ -82,9 +85,9 @@
           <label class="field-label">1.5 ประเภทของพื้นที่ชุ่มน้ำ</label>
           <div class="choices" id="wetland-choices"></div>
         </div>
-        <div class="field"><label class="field-label">1.6 หน่วยงานผู้รับผิดชอบการบริหารจัดการพื้นที่ (หากเป็นพื้นที่เอกชนไม่จำเป็นต้องระบุ)</label><input type="text" id="f-agency" placeholder="ชื่อหน่วยงาน (ถ้ามี)"></div>
+        <div class="field"><label class="field-label">1.6 หน่วยงานผู้รับผิดชอบการบริหารจัดการพื้นที่ (หากเป็นพื้นที่เอกชนไม่จำเป็นต้องระบุ)</label><input type="text" id="f-agency" enterkeyhint="next" placeholder="ชื่อหน่วยงาน (ถ้ามี)"></div>
       </div>
-      <div class="nav-row"><div></div><button class="btn primary" onclick="go(2)">ถัดไป</button></div>
+      <div class="nav-row"><button class="btn primary" onclick="go(2)">ถัดไป</button></div>
     </section>
 
     <!-- ===== PANEL 2 ===== -->

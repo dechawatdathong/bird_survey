@@ -88,7 +88,7 @@ function renderBirds(){
         <div class="bird-info">
           <div class="bird-name">${b.n}</div>
           <span class="status-pill st-${b.s}">${b.s} · ${STATUS_TXT[b.s]}</span>
-          <div class="bird-count"><input type="text" placeholder="จำนวนที่พบ (ตัว)" onclick="event.stopPropagation()" oninput="selBirds['${b.id}']=this.value"></div>
+          <div class="bird-count"><input type="text" inputmode="numeric" placeholder="จำนวนที่พบ (ตัว)" onclick="event.stopPropagation()" oninput="selBirds['${b.id}']=this.value"></div>
         </div>
       </div>`).join('');
     return `<div class="section-title">${grp.label}</div><div class="bird-grid">${cards}</div>`;
@@ -105,7 +105,7 @@ function addOtherBird(){
   const wrap = document.getElementById('other-birds');
   const row = document.createElement('div');
   row.className = 'other-row';
-  row.innerHTML = `<input type="text" placeholder="ชื่อไทย"><input type="text" placeholder="ชื่อสามัญ"><input type="text" placeholder="จำนวน (ตัว)"><button type="button" onclick="this.parentElement.remove()">ลบ</button>`;
+  row.innerHTML = `<input type="text" placeholder="ชื่อไทย"><input type="text" placeholder="ชื่อสามัญ"><input type="text" inputmode="numeric" placeholder="จำนวน (ตัว)"><button type="button" onclick="this.parentElement.remove()">ลบ</button>`;
   wrap.appendChild(row);
 }
 
@@ -133,7 +133,11 @@ function actuallyGo(n, scroll=true){
     else if(t.dataset.tab<n) t.classList.add('done');
   });
   document.querySelectorAll('#main-view .panel').forEach(p=>p.classList.toggle('active', p.dataset.panel==n));
-  if(scroll) window.scrollTo({top:0,behavior:smoothOrAuto()});
+  if(scroll){
+    // เลื่อนให้แถบขั้นตอนอยู่บนสุด เห็นคำถามแรกของขั้นตอนทันที
+    const y = document.getElementById('steps-sentinel').getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({top: window.scrollY > y ? y : Math.min(window.scrollY, y), behavior:smoothOrAuto()});
+  }
 }
 function smoothOrAuto(){ return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'; }
 
@@ -432,3 +436,7 @@ renderBirds();
 addOtherBird(); addOtherBird();
 document.getElementById('f-date').valueAsDate = new Date();
 checkAdminHash();
+// แถบขั้นตอนติดด้านบนเมื่อเลื่อนลง
+new IntersectionObserver(([e])=>{
+  document.querySelector('#main-view .steps').classList.toggle('stuck', !e.isIntersecting && e.boundingClientRect.top < 0);
+}).observe(document.getElementById('steps-sentinel'));
