@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0E5CA6">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>แบบสำรวจ · นกน้ำอพยพและถิ่นที่อยู่อาศัย</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div id="main-view">
+  <div class="header">
+    <div class="header-water" aria-hidden="true">
+      <svg viewBox="0 0 700 52" preserveAspectRatio="none">
+        <g stroke="#FFFBE0" stroke-linecap="round">
+          <path d="M532 5h58" stroke-width="3" opacity=".9"/>
+          <path d="M520 13h82" stroke-width="2.4" opacity=".7"/>
+          <path d="M540 21h42" stroke-width="2" opacity=".6"/>
+          <path d="M512 29h98" stroke-width="1.8" opacity=".4"/>
+          <path d="M546 37h30" stroke-width="1.6" opacity=".35"/>
+        </g>
+        <g stroke="#FFFFFF" stroke-linecap="round" opacity=".55" stroke-width="1.5">
+          <path d="M40 10h50M180 18h36M300 8h60M90 28h30M390 24h44M640 14h40M250 34h50M450 40h36"/>
+        </g>
+      </svg>
+    </div>
+    <div class="gulls" aria-hidden="true">
+      <span class="gull far" style="left:59%;top:24px;width:18px;--f:2.7s;--d:0s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+      <span class="gull " style="left:67%;top:48px;width:24px;--f:2.3s;--d:.4s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+      <span class="gull far" style="left:61%;bottom:60px;width:16px;--f:2.6s;--d:1.1s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+      <span class="gull " style="left:71%;bottom:74px;width:30px;--f:2.2s;--d:.2s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+      <span class="gull far" style="left:83%;bottom:100px;width:20px;--f:2.8s;--d:.8s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+      <span class="gull " style="left:88%;bottom:62px;width:36px;--f:2.4s;--d:1.4s"><svg viewBox="0 0 40 16" aria-hidden="true"><path fill="currentColor" d="M0 9C5 3 11 1.5 16.5 6.5L20 9.5l3.5-3C29 1.5 35 3 40 9 34.5 6.2 28.5 6.3 23.3 10.6L20 13.4l-3.3-2.8C11.5 6.3 5.5 6.2 0 9Z"/></svg></span>
+    </div>
+    <div class="wrap">
+      <div class="header-top-row">
+        <span class="brand-badge">แบบสำรวจภาคประชาชน</span>
+        <div class="org-logo"><img src="assets/logo-onep.png" alt="ตราสัญลักษณ์สำนักงานนโยบายและแผนทรัพยากรธรรมชาติและสิ่งแวดล้อม"></div>
+      </div>
+      <h1>แบบสำรวจการติดตามนกน้ำอพยพและถิ่นที่อยู่อาศัย</h1>
+      <p class="subtitle">ร่วมบันทึกข้อมูลนกน้ำอพยพและสถานภาพพื้นที่ชุ่มน้ำในพื้นที่ของท่าน เพื่อสนับสนุนการอนุรักษ์และบริหารจัดการถิ่นที่อยู่อาศัย</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="steps">
+      <button class="step-btn active" data-tab="1" onclick="go(1)"><div class="step-num">1</div><div class="step-label">ข้อมูลพื้นที่</div></button>
+      <button class="step-btn" data-tab="2" onclick="go(2)"><div class="step-num">2</div><div class="step-label">ภัยคุกคาม</div></button>
+      <button class="step-btn" data-tab="3" onclick="go(3)"><div class="step-num">3</div><div class="step-label">นกน้ำอพยพ</div></button>
+      <button class="step-btn" data-tab="4" onclick="go(4)"><div class="step-num">4</div><div class="step-label">การมีส่วนร่วม</div></button>
+    </div>
+
+    <!-- ===== PANEL 1 ===== -->
+    <section class="panel active" data-panel="1">
+      <div class="card">
+        <span class="q-label">ข้อมูลผู้เก็บข้อมูล</span>
+        <h3 class="q-title">ข้อมูลผู้กรอกแบบสำรวจ</h3>
+        <div class="field-row">
+          <div class="field"><label class="field-label">วันที่เก็บข้อมูล</label><input type="date" id="f-date"></div>
+          <div class="field"><label class="field-label">ชื่อ-นามสกุล</label><input type="text" id="f-name" placeholder="ชื่อ นามสกุล"></div>
+        </div>
+        <div class="field"><label class="field-label">ชื่อเครือข่ายอนุรักษ์ (หากมี)</label><input type="text" id="f-network" placeholder="เช่น เครือข่ายอนุรักษ์นกน้ำ..."></div>
+      </div>
+
+      <div class="card">
+        <span class="q-label">ส่วนที่ 1 · ข้อมูลกายภาพและประเภทของพื้นที่</span>
+        <h3 class="q-title">ข้อมูลพื้นที่ที่สำรวจ</h3>
+        <div class="field"><label class="field-label">1.1 ชื่อพื้นที่</label><input type="text" id="f-areaname" placeholder="ชื่อพื้นที่/บริเวณที่สำรวจ"></div>
+        <div class="field"><label class="field-label">1.2 ที่ตั้งตามเขตการปกครอง</label><input type="text" id="f-location" placeholder="ตำบล / อำเภอ / จังหวัด"></div>
+        <div class="field-row">
+          <div class="field"><label class="field-label">1.3 ขนาดพื้นที่</label><input type="text" id="f-size" placeholder="ระบุตัวเลข"></div>
+          <div class="field"><label class="field-label">หน่วย</label><select id="f-size-unit"><option value="ไร่">ไร่</option><option value="ตร.กม.">ตารางกิโลเมตร</option></select></div>
+        </div>
+        <div class="field"><label class="field-label">1.4 ลักษณะกายภาพของพื้นที่ (หากมี)</label><textarea id="f-physical" placeholder="อธิบายลักษณะทางกายภาพพอสังเขป"></textarea></div>
+        <div class="field">
+          <label class="field-label">1.5 ประเภทของพื้นที่ชุ่มน้ำ</label>
+          <div class="choices" id="wetland-choices"></div>
+        </div>
+        <div class="field"><label class="field-label">1.6 หน่วยงานผู้รับผิดชอบการบริหารจัดการพื้นที่ (หากเป็นพื้นที่เอกชนไม่จำเป็นต้องระบุ)</label><input type="text" id="f-agency" placeholder="ชื่อหน่วยงาน (ถ้ามี)"></div>
+      </div>
+      <div class="nav-row"><div></div><button class="btn primary" onclick="go(2)">ถัดไป</button></div>
+    </section>
+
+    <!-- ===== PANEL 2 ===== -->
+    <section class="panel" data-panel="2">
+      <div class="card">
+        <span class="q-label">ส่วนที่ 2 · สถานภาพและเขตคุ้มครองตามกฎหมาย</span>
+        <h3 class="q-title">2.1 สถานภาพของพื้นที่</h3>
+        <div class="choices" id="status-choices">
+          <button class="choice" data-value="พื้นที่อนุรักษ์ตามกฎหมาย" onclick="pickRadio(this,'status')"><span class="icon"></span><span class="text">พื้นที่อนุรักษ์ตามกฎหมาย<span class="hint">เช่น อุทยานแห่งชาติ เขตรักษาพันธุ์สัตว์ป่า เขตห้ามล่าสัตว์ป่า วนอุทยาน พื้นที่คุ้มครองสิ่งแวดล้อม ป่าชายเลนอนุรักษ์ ฯลฯ</span></span></button>
+          <button class="choice" data-value="ไม่อยู่ในเขตพื้นที่อนุรักษ์ตามกฎหมาย" onclick="pickRadio(this,'status')"><span class="icon"></span><span class="text">ไม่อยู่ในเขตพื้นที่อนุรักษ์ตามกฎหมาย</span></button>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="q-label">ส่วนที่ 3 · การติดตามสถานการณ์ภัยคุกคามในพื้นที่</span>
+        <h3 class="q-title">3.1 ภัยคุกคามที่เกิดจากมนุษย์</h3>
+        <p class="q-hint">ระบุว่ามีภัยคุกคามแต่ละประเภทหรือไม่ และให้รายละเอียดหากมี</p>
+        <div id="threats-human"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="q-title">3.2 ภัยคุกคามที่เกิดจากธรรมชาติ</h3>
+        <div id="threats-nature"></div>
+      </div>
+      <div class="nav-row"><button class="btn ghost" onclick="go(1)">ย้อนกลับ</button><button class="btn primary" onclick="go(3)">ถัดไป</button></div>
+    </section>
+
+    <!-- ===== PANEL 3 ===== -->
+    <section class="panel" data-panel="3">
+      <div class="card">
+        <span class="q-label">ส่วนที่ 4 · นกน้ำอพยพสำคัญในพื้นที่</span>
+        <h3 class="q-title">นกน้ำอพยพที่พบในพื้นที่</h3>
+        <p class="q-hint">แตะเลือกชนิดที่พบ สามารถเลือกได้มากกว่า 1 ชนิด และระบุจำนวนที่พบได้หากทราบ</p>
+        <div id="bird-groups"></div>
+
+        <div class="section-title">4.5 นกน้ำอื่น ๆ ที่พบในพื้นที่</div>
+        <p class="section-sub">หากพบชนิดที่ไม่มีในรายการด้านบน โปรดระบุเพิ่มเติม</p>
+        <div id="other-birds"></div>
+        <button type="button" class="add-row-btn" onclick="addOtherBird()">+ เพิ่มชนิดนกน้ำอื่น ๆ</button>
+      </div>
+      <div class="nav-row"><button class="btn ghost" onclick="go(2)">ย้อนกลับ</button><button class="btn primary" onclick="go(4)">ถัดไป</button></div>
+    </section>
+
+    <!-- ===== PANEL 4 ===== -->
+    <section class="panel" data-panel="4">
+      <div class="card">
+        <span class="q-label">ส่วนที่ 5 · การสื่อสาร การศึกษา และการมีส่วนร่วม (CEPA)</span>
+        <h3 class="q-title">5.1 ท่านเคยมีส่วนร่วมกับกิจกรรมอนุรักษ์ถิ่นที่อยู่อาศัยและนกน้ำอพยพในพื้นที่หรือไม่</h3>
+        <div class="choices" id="participate-choices">
+          <button class="choice" data-value="เคยมีส่วนร่วม" onclick="pickRadio(this,'participate');toggleSub('cepa-sub',true)"><span class="icon"></span><span class="text">เคยมีส่วนร่วม</span></button>
+          <button class="choice" data-value="ไม่เคยมีส่วนร่วม" onclick="pickRadio(this,'participate');toggleSub('cepa-sub',false)"><span class="icon"></span><span class="text">ไม่เคยมีส่วนร่วม</span></button>
+        </div>
+        <div id="cepa-sub" style="display:none;margin-top:16px;padding-top:16px;border-top:1px dashed var(--line-strong);">
+          <h3 class="q-title" style="font-size:19px;">5.2 ท่านทราบหน่วยงานที่เป็นผู้จัดกิจกรรม CEPA ในพื้นที่หรือไม่</h3>
+          <div class="choices" id="knoworg-choices">
+            <button class="choice" data-value="ทราบ" onclick="pickRadio(this,'know_org');toggleSub('org-name-wrap',true)"><span class="icon"></span><span class="text">ทราบ</span></button>
+            <button class="choice" data-value="ไม่ทราบ" onclick="pickRadio(this,'know_org');toggleSub('org-name-wrap',false)"><span class="icon"></span><span class="text">ไม่ทราบ</span></button>
+          </div>
+          <div class="field" id="org-name-wrap" style="display:none;margin-top:10px;">
+            <label class="field-label">โปรดระบุชื่อหน่วยงานผู้จัด</label>
+            <input type="text" id="f-orgname" placeholder="ชื่อหน่วยงาน">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="q-label">ส่วนที่ 6 · ข้อเสนอแนะ</span>
+        <h3 class="q-title">ข้อเสนอแนะเพิ่มเติมในการบริหารจัดการความหลากหลายทางชีวภาพในพื้นที่</h3>
+        <textarea id="f-suggestion" placeholder="ข้อเสนอแนะของท่าน (ไม่บังคับ)" style="min-height:110px;"></textarea>
+      </div>
+      <div class="nav-row"><button class="btn ghost" onclick="go(3)">ย้อนกลับ</button><button class="btn accent" id="submit-btn" onclick="submitSurvey()">ส่งแบบสำรวจ</button></div>
+    </section>
+
+    <div class="site-footer">สำนักงานนโยบายและแผนทรัพยากรธรรมชาติและสิ่งแวดล้อม</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN VIEW ===== -->
+<div id="admin-view">
+  <div class="admin-header">
+    <div class="wrap" style="padding:0;">
+      <h1>สรุปข้อมูลแบบสำรวจ</h1>
+      <p id="admin-sub">ข้อมูลจากฐานข้อมูลกลาง</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div id="admin-dash">
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">จำนวนผู้ตอบ</div></div>
+      <div class="stat-box"><div class="stat-num" id="stat-species">0</div><div class="stat-label">ชนิดนกที่พบรวม</div></div>
+    </div>
+    <div class="admin-section">
+      <h2>ประเภทพื้นที่ชุ่มน้ำ</h2>
+      <div id="agg-wetland"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+    </div>
+    <div class="admin-section">
+      <h2>นกน้ำที่พบมากที่สุด (10 อันดับแรก)</h2>
+      <div id="agg-birds"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+    </div>
+    <div class="admin-section">
+      <h2>ภัยคุกคามที่พบ</h2>
+      <div id="agg-threats"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+    </div>
+    <div class="admin-section">
+      <h2>รายการตอบล่าสุด</h2>
+      <div id="admin-table-wrap"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+    </div>
+    <div class="admin-section">
+      <h2>จัดการข้อมูล</h2>
+      <div class="btn-group">
+        <button class="btn primary small" onclick="exportExcel()">ดาวน์โหลด Excel</button>
+        <button class="btn ghost small" onclick="renderAdmin()">รีเฟรช</button>
+        <button class="btn danger small" onclick="resetAll()">ลบข้อมูลทั้งหมด</button>
+      </div>
+    </div>
+    </div>
+    <div style="text-align:center;margin-top:10px;"><a href="#" onclick="closeAdmin();return false;" style="color:var(--brand);font-size:15px;">← กลับไปหน้าแบบสำรวจ</a></div>
+  </div>
+</div>
+
+<div id="success-overlay">
+  <div class="success-inner">
+    <div class="success-check">✓</div>
+    <h1>ขอบคุณสำหรับข้อมูล</h1>
+    <p>แบบสำรวจของท่านถูกบันทึกเรียบร้อยแล้ว ข้อมูลนี้จะช่วยสนับสนุนการอนุรักษ์นกน้ำอพยพและถิ่นที่อยู่อาศัยในพื้นที่</p>
+    <button class="btn accent" style="flex:0 0 auto;" onclick="restartSurvey()">กรอกแบบสำรวจอีกครั้ง</button>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>

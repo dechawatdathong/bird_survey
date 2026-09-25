@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---- แบบสำรวจนกน้ำ ----
+    // ส่งคำตอบ: ตรวจว่ามีชื่อผู้กรอกและขนาดข้อมูลไม่ผิดปกติ
+    // อ่าน/ลบ: เปิดให้หน้า #admin ใช้งานได้โดยไม่ต้องล็อกอิน
+    match /waterbird_responses/{docId} {
+      allow create: if request.resource.data.size() < 40
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0;
+      allow read, delete: if true;
+    }
+
+    // อย่างอื่นทั้งหมดปิดไว้
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
