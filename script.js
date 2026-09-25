@@ -162,6 +162,7 @@ function collectErrors(panels){
     req(1,'f-date','วันที่เก็บข้อมูล','กรุณาเลือกวันที่');
     req(1,'f-name','ชื่อ-นามสกุล');
     req(1,'f-areaname','1.1 ชื่อพื้นที่');
+    if(val('f-areaname')==='__other__') req(1,'f-areaname-other','1.1 ระบุชื่อพื้นที่');
     req(1,'f-location','1.2 ที่ตั้งตามเขตการปกครอง');
     const size = val('f-size').replace(/,/g,'');
     if(!size) add(1,'1.3 ขนาดพื้นที่','กรุณากรอก',fieldOf('f-size'),document.getElementById('f-size'));
@@ -275,7 +276,7 @@ function submitSurvey(){
     date: document.getElementById('f-date').value,
     name: document.getElementById('f-name').value.trim(),
     network: document.getElementById('f-network').value.trim(),
-    areaName: document.getElementById('f-areaname').value.trim(),
+    areaName: val('f-areaname')==='__other__' ? val('f-areaname-other') : val('f-areaname'),
     location: document.getElementById('f-location').value.trim(),
     size: document.getElementById('f-size').value.trim(),
     sizeUnit: document.getElementById('f-size-unit').value,
@@ -318,6 +319,7 @@ function restartSurvey(){
   selBirds = {}; otherBirdCount = 0;
   clearErrors();
   toggleSub('cepa-sub',false); toggleSub('org-name-wrap',false);
+  document.getElementById('f-areaname').selectedIndex=0; toggleSub('areaname-other-wrap',false);
   actuallyGo(1);
 }
 

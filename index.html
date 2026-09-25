@@ -74,7 +74,21 @@
       <div class="card">
         <span class="q-label">ส่วนที่ 1 · ข้อมูลกายภาพและประเภทของพื้นที่</span>
         <h3 class="q-title">ข้อมูลพื้นที่ที่สำรวจ</h3>
-        <div class="field"><label class="field-label">1.1 ชื่อพื้นที่</label><input type="text" id="f-areaname" enterkeyhint="next" placeholder="ชื่อพื้นที่/บริเวณที่สำรวจ"></div>
+        <div class="field"><label class="field-label" for="f-areaname">1.1 ชื่อพื้นที่</label>
+          <select id="f-areaname" onchange="toggleSub('areaname-other-wrap', this.value==='__other__')">
+            <option value="">เลือกพื้นที่</option>
+            <option>พื้นที่บ้านปากทะเล-แหลมผักเบี้ย จังหวัดเพชรบุรี</option>
+            <option>พื้นที่บ้านโคกขาม จังหวัดสมุทรสาคร</option>
+            <option>ศูนย์ศึกษาธรรมชาติกองทัพบก (บางปู) เฉลิมพระเกียรติ 72 พรรษามหาราชินี จังหวัดสมุทรปราการ</option>
+            <option>พื้นที่ดอนหอยหลอด จังหวัดสมุทรสงคราม</option>
+            <option>พื้นที่หาดเลนบ้านคลองโคน จังหวัดสมุทรสงคราม</option>
+            <option value="__other__">พื้นที่อื่น ๆ (โปรดระบุ)</option>
+          </select>
+        </div>
+        <div class="field" id="areaname-other-wrap" style="display:none;">
+          <label class="field-label" for="f-areaname-other">ระบุชื่อพื้นที่</label>
+          <input type="text" id="f-areaname-other" enterkeyhint="next" placeholder="ชื่อพื้นที่/บริเวณที่สำรวจ">
+        </div>
         <div class="field"><label class="field-label">1.2 ที่ตั้งตามเขตการปกครอง</label><input type="text" id="f-location" enterkeyhint="next" placeholder="ตำบล / อำเภอ / จังหวัด"></div>
         <div class="field-row keep">
           <div class="field"><label class="field-label">1.3 ขนาดพื้นที่</label><input type="text" id="f-size" placeholder="ระบุตัวเลข" inputmode="decimal" enterkeyhint="next"></div>
