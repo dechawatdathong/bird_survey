@@ -189,25 +189,55 @@
   </div>
   <div class="wrap">
     <div id="admin-dash">
-    <div class="stat-row">
-      <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">จำนวนผู้ตอบ</div></div>
-      <div class="stat-box"><div class="stat-num" id="stat-species">0</div><div class="stat-label">ชนิดนกที่พบรวม</div></div>
+    <div class="stat-row stat-3">
+      <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">ผู้ตอบ</div></div>
+      <div class="stat-box"><div class="stat-num" id="stat-areas">0</div><div class="stat-label">พื้นที่</div></div>
+      <div class="stat-box"><div class="stat-num" id="stat-species">0</div><div class="stat-label">ชนิดนกที่พบ</div></div>
+    </div>
+
+    <div class="admin-section">
+      <h2>ผู้ตอบแยกตามพื้นที่ที่สำรวจ</h2>
+      <div id="agg-area"></div>
     </div>
     <div class="admin-section">
       <h2>ประเภทพื้นที่ชุ่มน้ำ</h2>
-      <div id="agg-wetland"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+      <div id="agg-wetland"></div>
     </div>
     <div class="admin-section">
-      <h2>นกน้ำที่พบมากที่สุด (10 อันดับแรก)</h2>
-      <div id="agg-birds"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+      <h2>ภัยคุกคามที่เกิดจากมนุษย์</h2>
+      <p class="admin-note">สุ่มตัวอย่างปัญหาที่ผู้ตอบระบุ หัวข้อละไม่เกิน 3 ตัวอย่าง</p>
+      <div id="agg-threat-human"></div>
     </div>
     <div class="admin-section">
-      <h2>ภัยคุกคามที่พบ</h2>
-      <div id="agg-threats"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+      <h2>ภัยคุกคามที่เกิดจากธรรมชาติ</h2>
+      <p class="admin-note">สุ่มตัวอย่างปัญหาที่ผู้ตอบระบุ หัวข้อละไม่เกิน 3 ตัวอย่าง</p>
+      <div id="agg-threat-nature"></div>
     </div>
     <div class="admin-section">
-      <h2>รายการตอบล่าสุด</h2>
-      <div id="admin-table-wrap"><p class="admin-empty">ยังไม่มีข้อมูล</p></div>
+      <h2>นกน้ำอพยพที่พบในพื้นที่</h2>
+      <p class="admin-note">ชื่อยิ่งใหญ่ = นับได้หลายตัว · สีตามสถานภาพการอนุรักษ์ · รวมนกที่ระบุเพิ่มในข้อ 4.5</p>
+      <div id="agg-birds"></div>
+      <div class="cloud-legend">
+        <span><i class="lg-CR"></i>CR</span><span><i class="lg-EN"></i>EN</span><span><i class="lg-VU"></i>VU</span><span><i class="lg-NT"></i>NT</span><span><i class="lg-LC"></i>LC</span><span><i class="lg-OT"></i>อื่น ๆ (4.5)</span>
+      </div>
+    </div>
+    <div class="admin-section">
+      <h2>การสื่อสาร การศึกษา และการมีส่วนร่วม (CEPA)</h2>
+      <h3 class="admin-sub first">5.1 เคยมีส่วนร่วมกับกิจกรรมอนุรักษ์</h3>
+      <div id="agg-cepa"></div>
+      <h3 class="admin-sub">5.2 ทราบหน่วยงานผู้จัดกิจกรรม</h3>
+      <div id="agg-knoworg"></div>
+      <h3 class="admin-sub">หน่วยงานผู้จัดที่ระบุ</h3>
+      <div id="agg-orgs"></div>
+    </div>
+    <div class="admin-section">
+      <h2>ข้อเสนอแนะ</h2>
+      <div id="agg-suggest"></div>
+    </div>
+    <div class="admin-section">
+      <h2>คำตอบรายบุคคล</h2>
+      <p class="admin-note">เรียงจากล่าสุด · แตะเพื่อดูคำตอบทั้งหมด</p>
+      <div id="admin-table-wrap"></div>
     </div>
     <div class="admin-section">
       <h2>จัดการข้อมูล</h2>

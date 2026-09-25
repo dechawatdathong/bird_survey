@@ -361,33 +361,118 @@ async function renderAdmin(){
       : 'โหลดข้อมูลไม่สำเร็จ กรุณากดรีเฟรช'}</p>`;
     return;
   }
-  const all = adminData;
-  document.getElementById('stat-total').textContent = all.length;
-  const wetC={}, birdC={}, threatC={};
-  let speciesSet = new Set();
+  renderAdminView();
+}
+
+const WET_LABEL = {coastal:'ชายฝั่งทะเล', inland:'ภายในแผ่นดิน', manmade:'มนุษย์สร้างขึ้น'};
+const BIRD_BY_ID = Object.fromEntries(BIRDS.map(b=>[b.id,b]));
+const THREAT_H = Object.fromEntries(THREATS_HUMAN.map(t=>[t.v,t.t]));
+const THREAT_N = Object.fromEntries(THREATS_NATURE.map(t=>[t.v,t.t]));
+const EMPTY = '<p class="admin-empty">ยังไม่มีข้อมูล</p>';
+const toNum = v => { const n = parseFloat(String(v??'').replace(/,/g,'')); return isFinite(n) ? n : null; };
+const fmt = n => n.toLocaleString('th-TH');
+
+function barRows(entries, {sub}={}){
+  if(!entries.length) return EMPTY;
+  const max = Math.max(...entries.map(e=>e.n));
+  return entries.map(e=>`<div class="agg-row"><span class="label">${esc(e.label)}${e.extra?` <span class="agg-extra">${e.extra}</span>`:''}</span><div class="bar"><div style="width:${Math.round(e.n/max*100)}%"></div></div><span class="count">${fmt(e.n)}</span></div>`).join('');
+}
+function countBy(list, keyFn){
+  const m = new Map();
+  list.forEach(x=>{ const k = keyFn(x); if(k) m.set(k,(m.get(k)||0)+1); });
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]);
+}
+// ภัยคุกคาม: สุ่มตัวอย่างจากผู้ตอบไม่เกิน 3 ตัวอย่างต่อหัวข้อ (สุ่มใหม่ทุกครั้งที่เปิด/รีเฟรช)
+function threatBlock(all, field, labels){
+  return Object.entries(labels).map(([key,label])=>{
+    const hits = [];
+    all.slice().reverse().forEach(r=>(r[field]||[]).forEach(t=>{ if(t.key===key && t.has && (t.detail||'').trim()) hits.push({area:r.areaName, detail:t.detail.trim()}); }));
+    for(let i=hits.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [hits[i],hits[j]]=[hits[j],hits[i]]; }
+    const picked = hits.slice(0,3);
+    if(!picked.length) return `<div class="threat-agg" data-empty><div class="threat-agg-head"><span class="label">${esc(label)}</span><span class="none">ไม่มี</span></div></div>`;
+    return `<div class="threat-agg">
+      <div class="threat-agg-head"><span class="label">${esc(label)}</span></div>
+      <ul class="detail-list">${picked.map(h=>`<li><span class="who">${esc(h.area||'ไม่ระบุพื้นที่')}</span>${esc(h.detail)}</li>`).join('')}</ul>
+    </div>`;
+  }).join('');
+}
+function answerCard(r){
+  const threats = (list, labels) => {
+    const yes = (list||[]).filter(t=>t.has);
+    return yes.length ? yes.map(t=>`<li><b>${esc(labels[t.key]||t.key)}</b>${t.detail?` — ${esc(t.detail)}`:''}</li>`).join('') : '<li class="muted">ไม่มี</li>';
+  };
+  const birds = (r.birds||[]).map(b=>`<li>${esc(BIRD_BY_ID[b.id]?.n||b.id)}${b.count?` <span class="muted">(${esc(b.count)} ตัว)</span>`:''}</li>`).join('');
+  const others = (r.otherBirds||[]).map(o=>`<li>${esc(o.th||o.common)}${o.th&&o.common?` <span class="muted">${esc(o.common)}</span>`:''}${o.count?` <span class="muted">(${esc(o.count)} ตัว)</span>`:''}</li>`).join('');
+  const row = (k,v) => v ? `<div class="kv"><span>${k}</span><span>${esc(v)}</span></div>` : '';
+  return `<details class="resp">
+    <summary><span class="resp-area">${esc(r.areaName||'-')}</span><span class="resp-meta">${esc(r.name||'-')} · ${esc(r.date||'')}</span></summary>
+    <div class="resp-body">
+      <h4>ข้อมูลผู้กรอกและพื้นที่</h4>
+      ${row('ชื่อ-นามสกุล',r.name)}${row('เครือข่าย',r.network)}${row('วันที่เก็บข้อมูล',r.date)}
+      ${row('ที่ตั้ง',r.location)}${row('ขนาดพื้นที่',r.size?`${r.size} ${r.sizeUnit||''}`:'')}
+      ${row('ประเภทพื้นที่ชุ่มน้ำ',WET_LABEL[r.wetlandType]||r.wetlandType)}${row('หน่วยงานรับผิดชอบ',r.agency)}
+      ${row('สถานภาพพื้นที่',r.areaStatus)}${row('ลักษณะกายภาพ',r.physical)}
+      <h4>ภัยคุกคามจากมนุษย์</h4><ul>${threats(r.threatsHuman,THREAT_H)}</ul>
+      <h4>ภัยคุกคามจากธรรมชาติ</h4><ul>${threats(r.threatsNature,THREAT_N)}</ul>
+      <h4>นกน้ำอพยพที่พบ</h4><ul>${birds||'<li class="muted">ไม่ได้เลือก</li>'}${others}</ul>
+      <h4>CEPA</h4>
+      ${row('5.1 มีส่วนร่วม',r.participate)}${row('5.2 ทราบหน่วยงานผู้จัด',r.knowOrg)}${row('หน่วยงานผู้จัด',r.orgName)}
+      ${r.suggestion?`<h4>ข้อเสนอแนะ</h4><p class="resp-text">${esc(r.suggestion)}</p>`:''}
+    </div>
+  </details>`;
+}
+
+// เวิร์ดคลาวด์นกน้ำ: ขนาดตามจำนวนคำตอบที่พบ สีตามสถานภาพ ตัวเลขรวมอยู่ด้านหลัง
+function birdCloud(all){
+  const stats = new Map();
+  const add = (key, label, status, count) => {
+    const s = stats.get(key) || {label, status, n:0, total:0};
+    s.n++; const c = toNum(count); if(c!==null) s.total += c; stats.set(key, s);
+  };
   all.forEach(r=>{
-    if(r.wetlandType) wetC[r.wetlandType]=(wetC[r.wetlandType]||0)+1;
-    (r.birds||[]).forEach(b=>{ birdC[b.id]=(birdC[b.id]||0)+1; speciesSet.add(b.id); });
-    (r.threatsHuman||[]).concat(r.threatsNature||[]).forEach(t=>{ if(t.has) threatC[t.key]=(threatC[t.key]||0)+1; });
+    (r.birds||[]).forEach(b=>{ const bd = BIRD_BY_ID[b.id]; add(b.id, bd?bd.n:b.id, bd?bd.s:'OT', b.count); });
+    (r.otherBirds||[]).forEach(o=>{ const k=(o.th||o.common||'').trim(); if(k) add('o:'+k, k, 'OT', o.count); });
   });
-  document.getElementById('stat-species').textContent = speciesSet.size;
-  const wetLabel = {coastal:'ชายฝั่งทะเล', inland:'ภายในแผ่นดิน', manmade:'มนุษย์สร้างขึ้น'};
-  aggBox('agg-wetland', wetC, k=>wetLabel[k]||k);
-  const birdMap = {}; BIRDS.forEach(b=>birdMap[b.id]=b.n);
-  const top10 = Object.fromEntries(Object.entries(birdC).sort((a,b)=>b[1]-a[1]).slice(0,10));
-  aggBox('agg-birds', top10, k=>birdMap[k]||k);
-  const threatLabel = {}; THREATS_HUMAN.concat(THREATS_NATURE).forEach(t=>threatLabel[t.v]=t.t);
-  aggBox('agg-threats', threatC, k=>threatLabel[k]||k);
-  const tableWrap = document.getElementById('admin-table-wrap');
-  if(!all.length){ tableWrap.innerHTML='<p class="admin-empty">ยังไม่มีข้อมูล</p>'; }
-  else{
-    let html='<div style="overflow-x:auto;"><table class="admin-table"><thead><tr><th>วันที่</th><th>ผู้กรอก</th><th>พื้นที่</th><th>จำนวนชนิดนก</th></tr></thead><tbody>';
-    all.slice().reverse().slice(0,30).forEach(r=>{
-      html+=`<tr><td>${esc(r.date||'-')}</td><td>${esc(r.name||'-')}</td><td>${esc(r.areaName||'-')}</td><td>${Array.isArray(r.birds)?r.birds.length:0}</td></tr>`;
-    });
-    html+='</tbody></table></div>';
-    tableWrap.innerHTML = html;
-  }
+  if(!stats.size) return EMPTY;
+  // ขนาดชื่อตามจำนวนตัวที่นับได้ (ชนิดที่ไม่ได้ระบุจำนวนจะเล็กที่สุด)
+  const items = [...stats.values()].sort((a,b)=>b.total-a.total || b.n-a.n);
+  const total = items.reduce((t,i)=>t+i.total,0);
+  const max = items[0].total, min = items[items.length-1].total;
+  const size = v => max===min ? 20 : Math.round(14 + (Math.sqrt(v)-Math.sqrt(min))/(Math.sqrt(max)-Math.sqrt(min))*20);
+  // วางชื่อที่ใหญ่ที่สุดไว้ตรงกลาง แล้วสลับซ้าย-ขวาออกไป
+  const arranged = [];
+  items.forEach((it,i)=> i%2 ? arranged.push(it) : arranged.unshift(it));
+  const words = arranged.map((it,i)=>`<span class="cw st-c-${it.status}" style="font-size:${size(it.total)}px;--fs:${size(it.total)}px;--d:${(i*0.37)%2.6}s;--r:${i%2?-1:1}" title="พบ ${it.n} คำตอบ${it.total?` · ${fmt(it.total)} ตัว`:''}">${esc(it.label)}${it.total?` <span class="cw-n">(${fmt(it.total)})</span>`:''}</span>`).join('');
+  return `<div class="bird-cloud">
+    <div class="cloud-total" aria-hidden="true"><b>${fmt(total)}</b><span>ตัว</span></div>
+    <div class="cloud-words">${words}</div>
+  </div>
+  <p class="cloud-caption">นับได้รวม <b>${fmt(total)}</b> ตัว จาก <b>${fmt(items.length)}</b> ชนิด · ตัวเลขในวงเล็บคือจำนวนตัวที่นับได้</p>`;
+}
+
+function renderAdminView(){
+  const all = adminData;
+  const set = (id, html) => document.getElementById(id).innerHTML = html;
+
+  document.getElementById('stat-total').textContent = fmt(all.length);
+  document.getElementById('stat-areas').textContent = fmt(new Set(all.map(r=>r.areaName).filter(Boolean)).size);
+  document.getElementById('stat-species').textContent = fmt(new Set(all.flatMap(r=>(r.birds||[]).map(b=>b.id))).size);
+
+  set('agg-area', barRows(countBy(all, r=>r.areaName).map(([k,n])=>({label:k,n}))));
+  set('agg-wetland', barRows(countBy(all, r=>r.wetlandType).map(([k,n])=>({label:WET_LABEL[k]||k,n}))));
+  set('agg-threat-human', all.length ? threatBlock(all,'threatsHuman',THREAT_H) : EMPTY);
+  set('agg-threat-nature', all.length ? threatBlock(all,'threatsNature',THREAT_N) : EMPTY);
+
+  set('agg-birds', birdCloud(all));
+
+  set('agg-cepa', barRows(countBy(all, r=>r.participate).map(([k,n])=>({label:k,n}))));
+  set('agg-knoworg', barRows(countBy(all, r=>r.knowOrg).map(([k,n])=>({label:k,n}))));
+  set('agg-orgs', barRows(countBy(all, r=>(r.orgName||'').trim()).map(([k,n])=>({label:k,n}))));
+
+  const sug = all.filter(r=>r.suggestion).slice().reverse();
+  set('agg-suggest', sug.length ? `<ul class="detail-list">${sug.map(r=>`<li><span class="who">${esc(r.areaName||'-')} · ${esc(r.name||'-')}</span>${esc(r.suggestion)}</li>`).join('')}</ul>` : EMPTY);
+
+  set('admin-table-wrap', all.length ? all.slice().reverse().map(answerCard).join('') : EMPTY);
 }
 async function resetAll(){
   if(!confirm('ยืนยันลบคำตอบทั้งหมดในฐานข้อมูลกลาง? ข้อมูลของทุกคนจะหายและเรียกคืนไม่ได้')) return;
@@ -405,26 +490,27 @@ async function resetAll(){
 function exportExcel(){
   const all = adminData;
   if(!all.length){ alert('ยังไม่มีข้อมูลให้ดาวน์โหลด'); return; }
-  const birdMap = {}; BIRDS.forEach(b=>birdMap[b.id]=b.n);
-  const header = ['วันที่','ผู้กรอก','เครือข่าย','ชื่อพื้นที่','ที่ตั้ง','ขนาดพื้นที่','ประเภทพื้นที่ชุ่มน้ำ','สถานภาพพื้นที่','นกที่พบ','นกอื่นๆที่ระบุเพิ่ม','เคยมีส่วนร่วม CEPA','ข้อเสนอแนะ'];
+  const thr = (list, key) => { const t=(list||[]).find(x=>x.key===key); return !t ? '' : t.has ? ('มี'+(t.detail?`: ${t.detail}`:'')) : 'ไม่มี'; };
+  const header = ['วันที่บันทึก','วันที่เก็บข้อมูล','ชื่อ-นามสกุล','เครือข่าย','1.1 ชื่อพื้นที่','1.2 ที่ตั้ง','1.3 ขนาดพื้นที่','1.4 ลักษณะกายภาพ','1.5 ประเภทพื้นที่ชุ่มน้ำ','1.6 หน่วยงานรับผิดชอบ','2.1 สถานภาพพื้นที่',
+    ...THREATS_HUMAN.map(t=>'3.1 '+t.t), ...THREATS_NATURE.map(t=>'3.2 '+t.t),
+    'นกน้ำอพยพที่พบ','นกน้ำอื่น ๆ (4.5)','5.1 มีส่วนร่วม CEPA','5.2 ทราบหน่วยงานผู้จัด','หน่วยงานผู้จัด','ข้อเสนอแนะ'];
   const rows=[header];
-  all.forEach(r=>{
-    rows.push([
-      r.date||'', r.name||'', r.network||'', r.areaName||'', r.location||'',
-      (r.size||'')+' '+(r.sizeUnit||''), r.wetlandType||'', r.areaStatus||'',
-      (r.birds||[]).map(b=>birdMap[b.id]+(b.count?` (${b.count} ตัว)`:'')).join(', '),
-      (r.otherBirds||[]).map(o=>o.th+(o.count?` (${o.count} ตัว)`:'')).join(', '),
-      r.participate||'', r.suggestion||''
-    ]);
-  });
+  all.forEach(r=>rows.push([
+    r.ts ? new Date(r.ts).toLocaleString('th-TH') : '', r.date||'', r.name||'', r.network||'', r.areaName||'', r.location||'',
+    r.size ? `${r.size} ${r.sizeUnit||''}` : '', r.physical||'', WET_LABEL[r.wetlandType]||r.wetlandType||'', r.agency||'', r.areaStatus||'',
+    ...THREATS_HUMAN.map(t=>thr(r.threatsHuman,t.v)), ...THREATS_NATURE.map(t=>thr(r.threatsNature,t.v)),
+    (r.birds||[]).map(b=>(BIRD_BY_ID[b.id]?.n||b.id)+(b.count?` (${b.count} ตัว)`:'')).join(', '),
+    (r.otherBirds||[]).map(o=>(o.th||o.common)+(o.count?` (${o.count} ตัว)`:'')).join(', '),
+    r.participate||'', r.knowOrg||'', r.orgName||'', r.suggestion||''
+  ]));
   const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = header.map(()=>({wch:22}));
+  const ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = header.map(()=>({wch:24}));
   XLSX.utils.book_append_sheet(wb, ws, 'คำตอบทั้งหมด');
-  const birdC={}; all.forEach(r=>(r.birds||[]).forEach(b=>birdC[b.id]=(birdC[b.id]||0)+1));
-  const wc=[['ชนิดนก','สถานภาพ','จำนวนผู้พบ']];
-  Object.entries(birdC).sort((a,b)=>b[1]-a[1]).forEach(([id,c])=>{const b=BIRDS.find(x=>x.id===id); wc.push([b?b.n:id, b?b.s:'', c]);});
-  const ws2 = XLSX.utils.aoa_to_sheet(wc); ws2['!cols']=[{wch:28},{wch:10},{wch:14}];
+  const birdStats=new Map();
+  all.forEach(r=>(r.birds||[]).forEach(b=>{const s=birdStats.get(b.id)||{n:0,total:0}; s.n++; const c=toNum(b.count); if(c!==null) s.total+=c; birdStats.set(b.id,s);}));
+  const wc=[['ชนิดนก','สถานภาพ','จำนวนคำตอบที่พบ','จำนวนตัวรวม']];
+  [...birdStats.entries()].sort((a,b)=>b[1].n-a[1].n).forEach(([id,s])=>{const b=BIRD_BY_ID[id]; wc.push([b?b.n:id, b?b.s:'', s.n, s.total||'']);});
+  const ws2 = XLSX.utils.aoa_to_sheet(wc); ws2['!cols']=[{wch:28},{wch:10},{wch:16},{wch:14}];
   XLSX.utils.book_append_sheet(wb, ws2, 'สรุปนกน้ำ');
   const dt = new Date();
   XLSX.writeFile(wb, `แบบสำรวจนกน้ำอพยพ-${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}.xlsx`);
